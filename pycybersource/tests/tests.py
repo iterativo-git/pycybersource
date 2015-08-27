@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import unittest
 import logging
 from random import randrange
@@ -63,8 +65,8 @@ class TestCyberSource(unittest.TestCase):
 
         # test types
         self.assertIsInstance(resp.reasonCode, int)
-        self.assertIsInstance(resp.requestID, unicode)
-        self.assertIsInstance(resp.message, unicode)
+        self.assertIsInstance(resp.requestID, str)
+        self.assertIsInstance(resp.message, str)
 
     def test_auth_and_reversal(self):
         # Successful auth
@@ -160,6 +162,72 @@ class TestCyberSource(unittest.TestCase):
         self.assertEqual(resp.decision, 'ACCEPT')
         self.assertTrue(resp.ccAuthReply)
         self.assertTrue(resp.requestID)
+
+    def test_cc_credit(self):
+        api = create_processor()
+        referenceCode = randrange(0, 100000)
+        sale_resp = api.ccSale(
+                   referenceCode=referenceCode,
+                   payment={
+                       'currency': 'USD',
+                       'total': '88.88',
+                   },
+                   card=self.testCard,
+                   billTo=self.billTo)
+        api = create_processor()
+        resp = api.ccCredit(
+                   referenceCode=referenceCode,
+                   captureRequestID=sale_resp.requestID,
+                   payment={
+                       'currency': 'USD',
+                       'total': '88.88',
+                   })
+        self.assertTrue(resp.success)
+        self.assertEqual(resp.reasonCode, 100)
+        self.assertEqual(resp.ccCreditReply['amount'], '88.88')
+        self.assertEqual(resp.decision, 'ACCEPT')
+
+    def test_cc_credit_partial(self):
+        api = create_processor()
+        referenceCode = randrange(0, 100000)
+        sale_resp = api.ccSale(
+                   referenceCode=referenceCode,
+                   payment={
+                       'currency': 'USD',
+                       'total': '88.88',
+                   },
+                   card=self.testCard,
+                   billTo=self.billTo)
+        resp = api.ccCredit(
+                   referenceCode=referenceCode,
+                   captureRequestID=sale_resp.requestID,
+                   payment={
+                       'currency': 'USD',
+                       'total': '22.22',
+                   })
+        self.assertTrue(resp.success)
+        self.assertEqual(resp.reasonCode, 100)
+        self.assertEqual(resp.ccCreditReply['amount'], '22.22')
+        self.assertEqual(resp.decision, 'ACCEPT')
+
+    def test_cc_capture_void(self):
+        api = create_processor()
+        referenceCode = randrange(0, 100000)
+        sale_resp = api.ccSale(
+                   referenceCode=referenceCode,
+                   payment={
+                       'currency': 'USD',
+                       'total': '88.88',
+                   },
+                   card=self.testCard,
+                   billTo=self.billTo)
+        resp = api.ccVoid(
+                   referenceCode=referenceCode,
+                   requestId=sale_resp.requestID,
+                   )
+        self.assertTrue(resp.success)
+        self.assertEqual(resp.reasonCode, 100)
+        self.assertEqual(resp.decision, 'ACCEPT')
 
     def test_cc_bad_amount(self):
         api = create_processor()

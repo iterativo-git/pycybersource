@@ -3,7 +3,7 @@ pycybersource
 
 A light wrapper for Cybersource SOAP Toolkit API
 
-This software is still alpha stage.  It supports card Auth, Capture, Sales, and Auth Reversal.
+This software is still alpha stage.  It supports card Auth, Capture, Sales, Auth Reversal, Credit and Void.
 
 Requirements
 ------------
@@ -58,6 +58,8 @@ This api wrapper currently only implements api calls for Authorization, Capture,
 `CyberSource.ccCapture`:  api call to perform a capture on a previous authorization  
 `Cybersource.ccSale`: api call to perform an auth & capture in one go  
 `CyberSource.ccAuthReversal`: api call to perform a credit card authorization reversal  
+`CyberSource.ccCredit`: api call to perform a credit card refund
+`CyberSource.ccVoid`: api call to perform a credit card void
 
 View tests to see further usage
 

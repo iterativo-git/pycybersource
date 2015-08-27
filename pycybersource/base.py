@@ -113,11 +113,22 @@ class CyberSource(object):
             'purchaseTotals': payment,
         }
 
+    def _build_ccCreditService(self, **kwargs):
+        ccCreditService = self.client.factory.create(
+                                            'ns0:ccCreditService')
+        ccCreditService.captureRequestID = kwargs['captureRequestID']
+        ccCreditService._run = 'true'
+
+        # payment info
+        payment = self._build_payment(**kwargs['payment'])
+        return {
+            'ccCreditService': ccCreditService,
+            'purchaseTotals': payment,
+        }
+
     def _build_ccSaleService(self, **kwargs):
         # auth
         ccAuthServiceOptions = self._build_ccAuthService(**kwargs)
-        ccCaptureService = self.client.factory.create(
-                                    'ns0:ccCaptureService')
         # capture
         ccCaptureService = self.client.factory.create(
                                     'ns0:ccCaptureService')
@@ -129,6 +140,16 @@ class CyberSource(object):
             'ccCaptureService': ccCaptureService
         })
         return options
+
+    def _build_ccVoidService(self, **kwargs):
+        voidService = self.client.factory.create(
+                                            'ns0:VoidService')
+        voidService.voidRequestID = kwargs['requestId']
+        voidService._run = 'true'
+
+        return {
+            'voidService': voidService,
+        }
 
     def _build_payment(self, total, currency):
         """
@@ -225,6 +246,16 @@ class CyberSource(object):
             payment=payment))
         return self.run_transaction('ccCaptureService', **kwargs)
 
+    def ccCredit(self, referenceCode, captureRequestID, payment, **kwargs):
+        """
+        Do a refund back to credit card, based on a previous auth.
+        """
+        kwargs.update(dict(
+            referenceCode=referenceCode,
+            captureRequestID=captureRequestID,
+            payment=payment))
+        return self.run_transaction('ccCreditService', **kwargs)
+
     def ccSale(self, referenceCode, payment, card, billTo, **kwargs):
         """
         Do an auth and an immediate capture. Use this for an immediate charge.
@@ -237,8 +268,20 @@ class CyberSource(object):
         return self.run_transaction('ccSaleService', **kwargs)
 
     def ccAuthReversal(self, referenceCode, authRequestID, payment, **kwargs):
+        """
+        Do an authorization reversal, based on a previous auth.
+        """
         kwargs.update(dict(
             referenceCode=referenceCode,
             authRequestID=authRequestID,
             payment=payment))
         return self.run_transaction('ccAuthReversalService', **kwargs)
+
+    def ccVoid(self, referenceCode, requestId, **kwargs):
+        """
+        Do a void, based on a previous capture or credit.
+        """
+        kwargs.update(dict(
+            referenceCode=referenceCode,
+            requestId=requestId))
+        return self.run_transaction('ccVoidService', **kwargs)

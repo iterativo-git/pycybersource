@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 
 CC_RESPONSE_CODES = {
         100: "Successful transaction",
@@ -77,7 +79,7 @@ class CyberSourceResponse(object):
 
     @property
     def decision(self):
-        return unicode(self.raw_response.decision)
+        return str(self.raw_response.decision)
 
     @property
     def success(self):
@@ -85,16 +87,16 @@ class CyberSourceResponse(object):
 
     @property
     def requestID(self):
-        return unicode(self.raw_response.requestID)
+        return str(self.raw_response.requestID)
 
     @property
     def message(self):
-        message = unicode(CC_RESPONSE_CODES.get(self.reasonCode, ''))
+        message = str(CC_RESPONSE_CODES.get(self.reasonCode, ''))
         if self.reasonCode in (101, 102):
             if hasattr(self.raw_response, 'invalidField'):
-                fields = u'Invalid fields: {0}'.format(
-                        u', '.join(list(self.raw_response.invalidField)))
-                message = u'. '.join([message, fields])
+                fields = 'Invalid fields: {0}'.format(
+                        ', '.join(list(self.raw_response.invalidField)))
+                message = '. '.join([message, fields])
         return message
 
     @property
