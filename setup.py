@@ -26,6 +26,6 @@ setup(
     ],
     keywords='cybersource payment soap suds api wrapper',
     requires=['suds'],
-    install_requires=['suds'],
+    install_requires=['suds-jurko>=0.6'],
     test_suite='pycybersource.tests',
 )

@@ -1,5 +1,9 @@
 from os import path
-import ConfigParser
+
+try:
+    import configparser as ConfigParser
+except ImportError:
+    import ConfigParser
 
 
 TEST_URL = 'https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor'

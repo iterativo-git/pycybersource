@@ -7,13 +7,13 @@ This software is still alpha stage.  It supports card Auth, Capture, Sales, Auth
 
 Requirements
 ------------
-The only dependency is suds SOAP package, which can be found here:
+The only dependency is suds SOAP package (Jurko's fork), which can be found here:
 
-    https://fedorahosted.org/suds/
+    https://pypi.python.org/pypi/suds-jurko/0.6
  
 Install suds:
 
-    pip install suds
+    pip install suds-jurko==0.6
  
  
 Installation
