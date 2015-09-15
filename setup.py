@@ -3,11 +3,10 @@
 A light wrapper for Cybersource SOAP Toolkit API
 """
 from setuptools import setup
-import pycybersource
 
 setup(
     name='pycybersource',
-    version=pycybersource.__version__,
+    version='0.1.2alpha',
     description='A light wrapper for Cybersource SOAP Toolkit API',
     author='Eric Bartels',
     author_email='ebartels@gmail.com',
