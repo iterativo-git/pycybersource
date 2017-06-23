@@ -88,6 +88,13 @@ class CyberSource(object):
             # 'businessRules': businessRules,
         }
 
+        if 'ucaf' in kwargs:
+            ucaf = self.client.factory.create(
+                                    'ns0:ucaf')
+            for key, value in kwargs['ucaf'].items():
+                setattr(ucaf, key, value)
+            ret.update({'ucaf': ucaf})
+
         if 'paymentNetwork' in kwargs:
             paymentNetworkToken = self.client.factory.create(
                                     'ns0:paymentNetworkToken')
