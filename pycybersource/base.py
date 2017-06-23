@@ -76,14 +76,29 @@ class CyberSource(object):
         # businessRules = self.client.factory.create('ns0:businessRules')
         # businessRules.ignoreAVSResult = 'true'
 
-        return {
+        if 'authService' in kwargs:
+            for key, value in kwargs['authService'].items():
+                setattr(ccAuthService, key, value)
+
+        ret = {
             'ccAuthService': ccAuthService,
             'purchaseTotals': payment,
             'card': card,
             'billTo': billTo,
             # 'businessRules': businessRules,
         }
-        return ccAuthService
+
+        if 'paymentNetwork' in kwargs:
+            paymentNetworkToken = self.client.factory.create(
+                                    'ns0:paymentNetworkToken')
+            for key, value in kwargs['paymentNetwork'].items():
+                setattr(paymentNetworkToken, key, value)
+            ret.update({'paymentNetworkToken': paymentNetworkToken})
+
+        if 'paymentSolution' in kwargs:
+            ret.update({'paymentSolution': kwargs['paymentSolution']})
+
+        return ret
 
     def _build_ccCaptureService(self, **kwargs):
         # service
