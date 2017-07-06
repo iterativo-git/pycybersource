@@ -88,6 +88,21 @@ class CyberSource(object):
             # 'businessRules': businessRules,
         }
 
+        for node_name in ['encryptedPayment', 'ucaf', 'paymentNetworkToken']:
+            if node_name in kwargs:
+                node = self.client.factory.create(
+                                    'ns0:{}'.format(node_name))
+                for key, value in kwargs[node_name].items():
+                    setattr(node, key, value)
+                ret.update({node_name: node})
+
+        if 'encryptedPayment' in kwargs:
+            encryptedPayment = self.client.factory.create(
+                                    'ns0:encryptedPayment')
+            for key, value in kwargs['encryptedPayment'].items():
+                setattr(encryptedPayment, key, value)
+            ret.update({'encryptedPayment': encryptedPayment})
+
         if 'ucaf' in kwargs:
             ucaf = self.client.factory.create(
                                     'ns0:ucaf')
@@ -95,10 +110,10 @@ class CyberSource(object):
                 setattr(ucaf, key, value)
             ret.update({'ucaf': ucaf})
 
-        if 'paymentNetwork' in kwargs:
+        if 'paymentNetworkToken' in kwargs:
             paymentNetworkToken = self.client.factory.create(
                                     'ns0:paymentNetworkToken')
-            for key, value in kwargs['paymentNetwork'].items():
+            for key, value in kwargs['paymentNetworkToken'].items():
                 setattr(paymentNetworkToken, key, value)
             ret.update({'paymentNetworkToken': paymentNetworkToken})
 
@@ -185,19 +200,26 @@ class CyberSource(object):
         return payment
 
     def _build_card(self,
-                    accountNumber,
-                    expirationMonth,
-                    expirationYear,
-                    cvNumber=None):
+                    accountNumber=None,
+                    expirationMonth=None,
+                    expirationYear=None,
+                    cvNumber=None,
+                    cardType=None):
 
         card = self.client.factory.create('ns0:Card')
-        card.accountNumber = accountNumber
-        card.expirationMonth = expirationMonth
-        card.expirationYear = expirationYear
+        if accountNumber:
+            card.accountNumber = accountNumber
+        if expirationMonth:
+            card.expirationMonth = expirationMonth
+        if expirationYear:
+            card.expirationYear = expirationYear
 
         if cvNumber:
             card.cvIndicator = 1
             card.cvNumber = cvNumber
+
+        if cardType:
+            card.cardType = cardType
 
         return card
 
