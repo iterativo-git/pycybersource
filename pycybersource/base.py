@@ -96,27 +96,6 @@ class CyberSource(object):
                     setattr(node, key, value)
                 ret.update({node_name: node})
 
-        if 'encryptedPayment' in kwargs:
-            encryptedPayment = self.client.factory.create(
-                                    'ns0:encryptedPayment')
-            for key, value in kwargs['encryptedPayment'].items():
-                setattr(encryptedPayment, key, value)
-            ret.update({'encryptedPayment': encryptedPayment})
-
-        if 'ucaf' in kwargs:
-            ucaf = self.client.factory.create(
-                                    'ns0:ucaf')
-            for key, value in kwargs['ucaf'].items():
-                setattr(ucaf, key, value)
-            ret.update({'ucaf': ucaf})
-
-        if 'paymentNetworkToken' in kwargs:
-            paymentNetworkToken = self.client.factory.create(
-                                    'ns0:paymentNetworkToken')
-            for key, value in kwargs['paymentNetworkToken'].items():
-                setattr(paymentNetworkToken, key, value)
-            ret.update({'paymentNetworkToken': paymentNetworkToken})
-
         if 'paymentSolution' in kwargs:
             ret.update({'paymentSolution': kwargs['paymentSolution']})
 
