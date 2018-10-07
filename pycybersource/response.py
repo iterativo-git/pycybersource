@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 
 CC_RESPONSE_CODES = {
         100: "Successful transaction",

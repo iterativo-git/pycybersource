@@ -1,11 +1,12 @@
 import collections
 from decimal import Decimal as D
+
+from suds import WebFault
 from suds.client import Client
 from suds.wsse import Security, UsernameToken
-from suds import WebFault
 
-from pycybersource.config import CyberSourceConfig
-from pycybersource.response import CyberSourceResponse
+from config import CyberSourceConfig
+from response import CyberSourceResponse
 
 
 class CyberSourceError(Exception):
@@ -33,15 +34,15 @@ class CyberSource(object):
             return CyberSourceConfig(**config)
         else:
             raise ValueError(
-                    "config must be a CyberSourceConfig instance or a dict")
+                "config must be a CyberSourceConfig instance or a dict")
 
     def init_client(self):
         client = Client(self.config.wsdl_url)
 
         # Add wsse security
         security = Security()
-        token = UsernameToken(username=self.config.merchant_id,
-                              password=self.config.api_key)
+        token = UsernameToken(
+            username=self.config.merchant_id, password=self.config.api_key)
         security.tokens.append(token)
         client.set_options(wsse=security)
         return client
@@ -59,8 +60,7 @@ class CyberSource(object):
 
     def _build_ccAuthService(self, **kwargs):
         # service
-        ccAuthService = self.client.factory.create(
-                                    'ns0:ccAuthService')
+        ccAuthService = self.client.factory.create('ns0:ccAuthService')
         ccAuthService._run = 'true'
 
         # payment info
@@ -90,8 +90,7 @@ class CyberSource(object):
 
         for node_name in ['encryptedPayment', 'ucaf', 'paymentNetworkToken']:
             if node_name in kwargs:
-                node = self.client.factory.create(
-                                    'ns0:{}'.format(node_name))
+                node = self.client.factory.create('ns0:{}'.format(node_name))
                 for key, value in kwargs[node_name].items():
                     setattr(node, key, value)
                 ret.update({node_name: node})
@@ -103,8 +102,7 @@ class CyberSource(object):
 
     def _build_ccCaptureService(self, **kwargs):
         # service
-        ccCaptureService = self.client.factory.create(
-                                    'ns0:ccCaptureService')
+        ccCaptureService = self.client.factory.create('ns0:ccCaptureService')
         ccCaptureService.authRequestID = kwargs['authRequestID']
         ccCaptureService._run = 'true'
 
@@ -118,7 +116,7 @@ class CyberSource(object):
 
     def _build_ccAuthReversalService(self, **kwargs):
         ccAuthReversalService = self.client.factory.create(
-                                            'ns0:ccAuthReversalService')
+            'ns0:ccAuthReversalService')
         ccAuthReversalService.authRequestID = kwargs['authRequestID']
         ccAuthReversalService._run = 'true'
 
@@ -130,8 +128,7 @@ class CyberSource(object):
         }
 
     def _build_ccCreditService(self, **kwargs):
-        ccCreditService = self.client.factory.create(
-                                            'ns0:ccCreditService')
+        ccCreditService = self.client.factory.create('ns0:ccCreditService')
         ccCreditService.captureRequestID = kwargs['captureRequestID']
         ccCreditService._run = 'true'
 
@@ -146,20 +143,16 @@ class CyberSource(object):
         # auth
         ccAuthServiceOptions = self._build_ccAuthService(**kwargs)
         # capture
-        ccCaptureService = self.client.factory.create(
-                                    'ns0:ccCaptureService')
+        ccCaptureService = self.client.factory.create('ns0:ccCaptureService')
         ccCaptureService._run = 'true'
 
         options = {}
         options.update(ccAuthServiceOptions)
-        options.update({
-            'ccCaptureService': ccCaptureService
-        })
+        options.update({'ccCaptureService': ccCaptureService})
         return options
 
     def _build_ccVoidService(self, **kwargs):
-        voidService = self.client.factory.create(
-                                            'ns0:VoidService')
+        voidService = self.client.factory.create('ns0:VoidService')
         voidService.voidRequestID = kwargs['requestId']
         voidService._run = 'true'
 
@@ -252,59 +245,62 @@ class CyberSource(object):
         Do a credit card auth transaction. Use this to crate a card auth, which
         can later be captured to charge the card.
         """
-        kwargs.update(dict(
-            referenceCode=referenceCode,
-            payment=payment,
-            card=card,
-            billTo=billTo))
+        kwargs.update(
+            dict(
+                referenceCode=referenceCode,
+                payment=payment,
+                card=card,
+                billTo=billTo))
         return self.run_transaction('ccAuthService', **kwargs)
 
     def ccCapture(self, referenceCode, authRequestID, payment, **kwargs):
         """
         Do a credit card capture, based on a previous auth.
         """
-        kwargs.update(dict(
-            referenceCode=referenceCode,
-            authRequestID=authRequestID,
-            payment=payment))
+        kwargs.update(
+            dict(
+                referenceCode=referenceCode,
+                authRequestID=authRequestID,
+                payment=payment))
         return self.run_transaction('ccCaptureService', **kwargs)
 
     def ccCredit(self, referenceCode, captureRequestID, payment, **kwargs):
         """
         Do a refund back to credit card, based on a previous auth.
         """
-        kwargs.update(dict(
-            referenceCode=referenceCode,
-            captureRequestID=captureRequestID,
-            payment=payment))
+        kwargs.update(
+            dict(
+                referenceCode=referenceCode,
+                captureRequestID=captureRequestID,
+                payment=payment))
         return self.run_transaction('ccCreditService', **kwargs)
 
     def ccSale(self, referenceCode, payment, card, billTo, **kwargs):
         """
         Do an auth and an immediate capture. Use this for an immediate charge.
         """
-        kwargs.update(dict(
-            referenceCode=referenceCode,
-            payment=payment,
-            card=card,
-            billTo=billTo))
+        kwargs.update(
+            dict(
+                referenceCode=referenceCode,
+                payment=payment,
+                card=card,
+                billTo=billTo))
         return self.run_transaction('ccSaleService', **kwargs)
 
     def ccAuthReversal(self, referenceCode, authRequestID, payment, **kwargs):
         """
         Do an authorization reversal, based on a previous auth.
         """
-        kwargs.update(dict(
-            referenceCode=referenceCode,
-            authRequestID=authRequestID,
-            payment=payment))
+        kwargs.update(
+            dict(
+                referenceCode=referenceCode,
+                authRequestID=authRequestID,
+                payment=payment))
         return self.run_transaction('ccAuthReversalService', **kwargs)
 
     def ccVoid(self, referenceCode, requestId, **kwargs):
         """
         Do a void, based on a previous capture or credit.
         """
-        kwargs.update(dict(
-            referenceCode=referenceCode,
-            requestId=requestId))
+        kwargs.update(dict(referenceCode=referenceCode, requestId=requestId))
         return self.run_transaction('ccVoidService', **kwargs)

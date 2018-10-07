@@ -5,7 +5,6 @@ try:
 except ImportError:
     import ConfigParser
 
-
 TEST_URL = 'https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor'
 PRODUCTION_URL = 'https://ics2ws.ic3.com/commerce/1.x/transactionProcessor'
 WSDL_URL = '{0}/CyberSourceTransaction_1.104.wsdl'
@@ -15,6 +14,7 @@ class CyberSourceConfig(object):
     """
     Configuration object for CyberSource
     """
+
     def __init__(self, merchant_id, api_key, test_mode=True, **kwargs):
         self.merchant_id = merchant_id.strip()
         self.api_key = api_key.strip()

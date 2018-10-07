@@ -1,3 +1,2 @@
-__version__ = '0.1.2alpha'
-
-from pycybersource.base import CyberSource
+from . import base, config
+from base import CyberSource
