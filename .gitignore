@@ -1,0 +1,13 @@
+# global
+*.pyc
+*.pyo
+__pycache__
+
+# /
+/.coverage
+/.tox
+/build
+/coverage
+/dist
+/distribute-*.egg
+/pycybersource.egg-info
