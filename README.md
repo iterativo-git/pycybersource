@@ -19,7 +19,7 @@ Install suds:
 Installation
 ------------
 
-    pip install git+https://github.com/bartels/pycybersource.git
+    pip install git+https://github.com/iterativo-git/pycybersource.git
 
 
 Usage
@@ -35,7 +35,7 @@ Usage
           card={
               'accountNumber': '4111111111111111',
               'expirationMonth': '05',
-              'expirationYear': '2018',
+              'expirationYear': '2020',
               'cvNumber': '123',
           },
           billTo={
