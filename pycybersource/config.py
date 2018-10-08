@@ -7,7 +7,7 @@ except ImportError:
 
 TEST_URL = 'https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor'
 PRODUCTION_URL = 'https://ics2ws.ic3.com/commerce/1.x/transactionProcessor'
-WSDL_URL = '{0}/CyberSourceTransaction_1.104.wsdl'
+WSDL_URL = '{0}/CyberSourceTransaction_1.150.wsdl'
 
 
 class CyberSourceConfig(object):
