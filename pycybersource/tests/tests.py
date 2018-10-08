@@ -6,9 +6,10 @@ from pycybersource.base import CyberSource, CyberSourceError
 from pycybersource.config import get_config_from_file
 
 # Set to logging.DEBUG or logging.INFO for more diagnostic messages
-logging.basicConfig(level=logging.CRITICAL)
-
-# logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+# # logging.getLogger('suds.client').setLevel(logging.DEBUG)
+# logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
+# # logging.getLogger('suds.wsse').setLevel(logging.DEBUG)
 
 
 def create_processor(**kwargs):
@@ -37,7 +38,7 @@ class TestCyberSource(unittest.TestCase):
         self.testCard = {
             'accountNumber': '4111111111111111',
             'expirationMonth': '05',
-            'expirationYear': '2018',
+            'expirationYear': '2020',
             'cvNumber': '123',
         }
 
