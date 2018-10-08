@@ -6,7 +6,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-from . import pycybersource
+import pycybersource
 
 # fix permissions for sdist
 if 'sdist' in sys.argv:
@@ -15,12 +15,12 @@ if 'sdist' in sys.argv:
 
 base_dir = os.path.dirname(__file__)
 
-with open(os.path.join(base_dir, 'README'), 'rb') as fp:
+with open(os.path.join(base_dir, 'README.md'), 'rb') as fp:
     long_description = fp.read().decode('utf-8')
 
 setup(
     name='pycybersource',
-    version='0.1.2alpha',
+    version='0.1.2a0',
     description='A light wrapper for Cybersource SOAP Toolkit API',
     author='Eric Bartels',
     author_email='ebartels@gmail.com',

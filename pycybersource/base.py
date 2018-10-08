@@ -5,8 +5,8 @@ from suds import WebFault
 from suds.client import Client
 from suds.wsse import Security, UsernameToken
 
-from config import CyberSourceConfig
-from response import CyberSourceResponse
+from pycybersource.config import CyberSourceConfig
+from pycybersource.response import CyberSourceResponse
 
 
 class CyberSourceError(Exception):
