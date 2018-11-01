@@ -7,9 +7,6 @@ from pycybersource.config import get_config_from_file
 
 # Set to logging.DEBUG or logging.INFO for more diagnostic messages
 logging.basicConfig(level=logging.INFO)
-# # logging.getLogger('suds.client').setLevel(logging.DEBUG)
-# logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
-# # logging.getLogger('suds.wsse').setLevel(logging.DEBUG)
 
 
 def create_processor(**kwargs):
