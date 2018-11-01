@@ -162,7 +162,7 @@ class CyberSource(object):
         currency: the payment currency (e.g. USD)
         """
         payment_type = self.client.get_type('ns0:PurchaseTotals')
-        payment = payment_type(currency=currency, grandTotalAmount=D(total))
+        return payment_type(currency=currency, grandTotalAmount=D(total))
 
     def _build_card(self,
                     accountNumber=None,
