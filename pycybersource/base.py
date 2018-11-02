@@ -55,8 +55,8 @@ class CyberSource(object):
 
     def _build_ccAuthService(self, **kwargs):
         # service
-        ccAuthService_type = self.client.get_type('ns0:CCAuthService')
-        ccAuthService = ccAuthService_type(run='true')
+        ccAuthService = {'run': 'true'}
+
         # payment error
         payment = self._build_payment(**kwargs['payment'])
 
@@ -66,8 +66,7 @@ class CyberSource(object):
         # billing
         billTo = self._build_bill_to(**kwargs['billTo'])
 
-        # businessRules = self.client.get_type('ns0:businessRules')
-        # businessRules.ignoreAVSResult = 'true'
+        # businessRules = {'ignoreAVSResult': 'true'}
         if 'authService' in kwargs:
             for key, value in kwargs['authService'].items():
                 setattr(ccAuthService, key, value)
@@ -81,8 +80,7 @@ class CyberSource(object):
 
         for node_name in ['EncryptedPayment', 'UCAF', 'PaymentNetworkToken']:
             if node_name in kwargs:
-                node_type = self.client.get_type('ns0:{}'.format(node_name))
-                node = node_type()
+                node = {}
                 for key, value in kwargs[node_name].items():
                     setattr(node, key, value)
                 ret.update({node_name: node})
@@ -93,66 +91,52 @@ class CyberSource(object):
         return ret
 
     def _build_ccCaptureService(self, **kwargs):
-        # service
-        ccCaptureService_type = self.client.get_type('ns0:CCCaptureService')
-        ccCaptureService = ccCaptureService_type(
-            authRequestID=kwargs['authRequestID'],
-            run='true'
-        )
         # payment error
         payment = self._build_payment(**kwargs['payment'])
-
         return {
-            'ccCaptureService': ccCaptureService,
+            'ccCaptureService': {
+                'authRequestID': kwargs['authRequestID'],
+                'run': 'true'
+            },
             'purchaseTotals': payment,
         }
 
     def _build_ccAuthReversalService(self, **kwargs):
-        ccAuthReversalService_type = self.client.get_type(
-            'ns0:CCAuthReversalService')
-        ccAuthReversalService = ccAuthReversalService_type(
-            authRequestID=kwargs['authRequestID'],
-            run='true')
         # payment error
         payment = self._build_payment(**kwargs['payment'])
         return {
-            'ccAuthReversalService': ccAuthReversalService,
+            'ccAuthReversalService': {
+                'authRequestID': kwargs['authRequestID'],
+                'run': 'true'
+            },
             'purchaseTotals': payment,
         }
 
     def _build_ccCreditService(self, **kwargs):
-        ccCreditService_type = self.client.get_type('ns0:CCCreditService')
-        ccCreditService = ccCreditService_type(
-            captureRequestID=kwargs['captureRequestID'],
-            run='true'
-        )
         # payment error
         payment = self._build_payment(**kwargs['payment'])
         return {
-            'ccCreditService': ccCreditService,
+            'ccCreditService': {
+                'captureRequestID': kwargs['captureRequestID'],
+                'run': 'true'
+            },
             'purchaseTotals': payment,
         }
 
     def _build_ccSaleService(self, **kwargs):
-        # auth
-        ccAuthServiceOptions = self._build_ccAuthService(**kwargs)
-        # capture
-        ccCaptureService_type = self.client.get_type('ns0:CCCaptureService')
-        ccCaptureService = ccCaptureService_type(run='true')
-
         options = {}
-        options.update(ccAuthServiceOptions)
-        options.update({'ccCaptureService': ccCaptureService})
+        # auth
+        options.update(self._build_ccAuthService(**kwargs))
+        # capture
+        options.update({'ccCaptureService': {'run': 'true'}})
         return options
 
     def _build_ccVoidService(self, **kwargs):
-        voidService_type = self.client.get_type('ns0:VoidService')
-        voidService = voidService_type(
-            voidRequestID=kwargs['requestId'],
-            run='true')
-
         return {
-            'voidService': voidService,
+            'voidService': {
+                'voidRequestID': kwargs['requestId'],
+                'run': 'true'
+            }
         }
 
     def _build_payment(self, total, currency):
@@ -161,8 +145,7 @@ class CyberSource(object):
         total: the total payment amount
         currency: the payment currency (e.g. USD)
         """
-        payment_type = self.client.get_type('ns0:PurchaseTotals')
-        return payment_type(currency=currency, grandTotalAmount=D(total))
+        return {'currency': currency, 'grandTotalAmount': D(total)}
 
     def _build_card(self,
                     accountNumber=None,
@@ -170,23 +153,19 @@ class CyberSource(object):
                     expirationYear=None,
                     cvNumber=None,
                     cardType=None):
-
-        card_type = self.client.get_type('ns0:Card')
-        card = card_type()
-
+        card = {}
         if accountNumber:
-            card.accountNumber = accountNumber
+            card.update({'accountNumber': accountNumber})
         if expirationMonth:
-            card.expirationMonth = expirationMonth
+            card.update({'expirationMonth': expirationMonth})
         if expirationYear:
-            card.expirationYear = expirationYear
+            card.update({'expirationYear': expirationYear})
 
         if cvNumber:
-            card.cvIndicator = 1
-            card.cvNumber = cvNumber
+            card.update({'cvIndicator': 1, 'cvNumber': cvNumber})
 
         if cardType:
-            card.cardType = cardType
+            card.update({'cardType': cardType})
 
         return card
 
@@ -200,20 +179,17 @@ class CyberSource(object):
                        postalCode,
                        street1,
                        street2=None):
-        billTo_type = self.client.get_type('ns0:BillTo')
-        billTo = billTo_type(
-            firstName=firstName,
-            lastName=lastName,
-            email=email,
-            country=country,
-            city=city,
-            state=state,
-            postalCode=postalCode,
-            street1=street1,
-            street2=street2
-        )
-
-        return billTo
+        return {
+            'firstName': firstName,
+            'lastName': lastName,
+            'email': email,
+            'country': country,
+            'city': city,
+            'state': state,
+            'postalCode': postalCode,
+            'street1': street1,
+            'street2': street2
+        }
 
     def run_transaction(self, serviceType, **kwargs):
         """
