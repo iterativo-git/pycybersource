@@ -7,13 +7,13 @@ This software is still alpha stage.  It supports card Auth, Capture, Sales, Auth
 
 Requirements
 ------------
-The only dependency is suds SOAP package (Jurko's fork), which can be found here:
+The only dependency is zeep SOAP client package, which can be found here:
 
-    https://pypi.python.org/pypi/suds-jurko/0.6
+    https://pypi.org/project/zeep/
  
-Install suds:
+Install zeep:
 
-    pip install suds-jurko==0.6
+    pip install zeep
  
  
 Installation
@@ -24,6 +24,7 @@ Installation
 
 Usage
 -----
+    from random import randrange
     from pycybersource import CyberSource
     api = CyberSource(config={'merchant_id': '...', 'api_key': ''})
     api.ccSale(

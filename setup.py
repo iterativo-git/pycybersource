@@ -37,8 +37,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages=['pycybersource'],
-    keywords='cybersource payment soap suds api wrapper',
-    requires=['suds'],
-    install_requires=['suds-jurko>=0.6'],
+    keywords='cybersource payment soap zeep api wrapper',
+    requires=['zeep'],
+    install_requires=['zeep'],
     test_suite='pycybersource.tests',
 )

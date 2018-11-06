@@ -1,9 +1,9 @@
 import collections
 from decimal import Decimal as D
 
-from suds import WebFault
-from suds.client import Client
-from suds.wsse import Security, UsernameToken
+from zeep.exceptions import Fault
+from zeep import Client
+from zeep.wsse.username import UsernameToken
 
 from pycybersource.config import CyberSourceConfig
 from pycybersource.response import CyberSourceResponse
@@ -20,7 +20,7 @@ class CyberSourceError(Exception):
 
 class CyberSource(object):
     """
-    Light suds wrapper around the with the Cybersource SOAP API
+    Light zeep wrapper around the with the Cybersource SOAP API
     """
 
     def __init__(self, config):
@@ -37,15 +37,10 @@ class CyberSource(object):
                 "config must be a CyberSourceConfig instance or a dict")
 
     def init_client(self):
-        client = Client(self.config.wsdl_url)
-
         # Add wsse security
-        security = Security()
         token = UsernameToken(
             username=self.config.merchant_id, password=self.config.api_key)
-        security.tokens.append(token)
-        client.set_options(wsse=security)
-        return client
+        return Client(self.config.wsdl_url, wsse=token)
 
     def _build_service_data(self, serviceType, **kwargs):
         """
@@ -60,26 +55,21 @@ class CyberSource(object):
 
     def _build_ccAuthService(self, **kwargs):
         # service
-        ccAuthService = self.client.factory.create('ns0:ccAuthService')
-        ccAuthService._run = 'true'
+        ccAuthService = {'run': 'true'}
 
-        # payment info
+        # payment error
         payment = self._build_payment(**kwargs['payment'])
 
-        # card info
+        # card error
         card = self._build_card(**kwargs['card'])
 
         # billing
         billTo = self._build_bill_to(**kwargs['billTo'])
 
-        # business rules
-        # businessRules = self.client.factory.create('ns0:businessRules')
-        # businessRules.ignoreAVSResult = 'true'
-
+        # businessRules = {'ignoreAVSResult': 'true'}
         if 'authService' in kwargs:
             for key, value in kwargs['authService'].items():
                 setattr(ccAuthService, key, value)
-
         ret = {
             'ccAuthService': ccAuthService,
             'purchaseTotals': payment,
@@ -88,9 +78,9 @@ class CyberSource(object):
             # 'businessRules': businessRules,
         }
 
-        for node_name in ['encryptedPayment', 'ucaf', 'paymentNetworkToken']:
+        for node_name in ['EncryptedPayment', 'UCAF', 'PaymentNetworkToken']:
             if node_name in kwargs:
-                node = self.client.factory.create('ns0:{}'.format(node_name))
+                node = {}
                 for key, value in kwargs[node_name].items():
                     setattr(node, key, value)
                 ret.update({node_name: node})
@@ -101,63 +91,52 @@ class CyberSource(object):
         return ret
 
     def _build_ccCaptureService(self, **kwargs):
-        # service
-        ccCaptureService = self.client.factory.create('ns0:ccCaptureService')
-        ccCaptureService.authRequestID = kwargs['authRequestID']
-        ccCaptureService._run = 'true'
-
-        # payment info
+        # payment error
         payment = self._build_payment(**kwargs['payment'])
-
         return {
-            'ccCaptureService': ccCaptureService,
+            'ccCaptureService': {
+                'authRequestID': kwargs['authRequestID'],
+                'run': 'true'
+            },
             'purchaseTotals': payment,
         }
 
     def _build_ccAuthReversalService(self, **kwargs):
-        ccAuthReversalService = self.client.factory.create(
-            'ns0:ccAuthReversalService')
-        ccAuthReversalService.authRequestID = kwargs['authRequestID']
-        ccAuthReversalService._run = 'true'
-
-        # payment info
+        # payment error
         payment = self._build_payment(**kwargs['payment'])
         return {
-            'ccAuthReversalService': ccAuthReversalService,
+            'ccAuthReversalService': {
+                'authRequestID': kwargs['authRequestID'],
+                'run': 'true'
+            },
             'purchaseTotals': payment,
         }
 
     def _build_ccCreditService(self, **kwargs):
-        ccCreditService = self.client.factory.create('ns0:ccCreditService')
-        ccCreditService.captureRequestID = kwargs['captureRequestID']
-        ccCreditService._run = 'true'
-
-        # payment info
+        # payment error
         payment = self._build_payment(**kwargs['payment'])
         return {
-            'ccCreditService': ccCreditService,
+            'ccCreditService': {
+                'captureRequestID': kwargs['captureRequestID'],
+                'run': 'true'
+            },
             'purchaseTotals': payment,
         }
 
     def _build_ccSaleService(self, **kwargs):
-        # auth
-        ccAuthServiceOptions = self._build_ccAuthService(**kwargs)
-        # capture
-        ccCaptureService = self.client.factory.create('ns0:ccCaptureService')
-        ccCaptureService._run = 'true'
-
         options = {}
-        options.update(ccAuthServiceOptions)
-        options.update({'ccCaptureService': ccCaptureService})
+        # auth
+        options.update(self._build_ccAuthService(**kwargs))
+        # capture
+        options.update({'ccCaptureService': {'run': 'true'}})
         return options
 
     def _build_ccVoidService(self, **kwargs):
-        voidService = self.client.factory.create('ns0:VoidService')
-        voidService.voidRequestID = kwargs['requestId']
-        voidService._run = 'true'
-
         return {
-            'voidService': voidService,
+            'voidService': {
+                'voidRequestID': kwargs['requestId'],
+                'run': 'true'
+            }
         }
 
     def _build_payment(self, total, currency):
@@ -166,10 +145,7 @@ class CyberSource(object):
         total: the total payment amount
         currency: the payment currency (e.g. USD)
         """
-        payment = self.client.factory.create('ns0:PurchaseTotals')
-        payment.currency = currency
-        payment.grandTotalAmount = D(total)
-        return payment
+        return {'currency': currency, 'grandTotalAmount': D(total)}
 
     def _build_card(self,
                     accountNumber=None,
@@ -177,21 +153,19 @@ class CyberSource(object):
                     expirationYear=None,
                     cvNumber=None,
                     cardType=None):
-
-        card = self.client.factory.create('ns0:Card')
+        card = {}
         if accountNumber:
-            card.accountNumber = accountNumber
+            card.update({'accountNumber': accountNumber})
         if expirationMonth:
-            card.expirationMonth = expirationMonth
+            card.update({'expirationMonth': expirationMonth})
         if expirationYear:
-            card.expirationYear = expirationYear
+            card.update({'expirationYear': expirationYear})
 
         if cvNumber:
-            card.cvIndicator = 1
-            card.cvNumber = cvNumber
+            card.update({'cvIndicator': 1, 'cvNumber': cvNumber})
 
         if cardType:
-            card.cardType = cardType
+            card.update({'cardType': cardType})
 
         return card
 
@@ -205,18 +179,17 @@ class CyberSource(object):
                        postalCode,
                        street1,
                        street2=None):
-        billTo = self.client.factory.create('ns0:BillTo')
-        billTo.firstName = firstName
-        billTo.lastName = lastName
-        billTo.email = email
-        billTo.country = country
-        billTo.city = city
-        billTo.state = state
-        billTo.postalCode = postalCode
-        billTo.street1 = street1
-        billTo.street2 = street2
-
-        return billTo
+        return {
+            'firstName': firstName,
+            'lastName': lastName,
+            'email': email,
+            'country': country,
+            'city': city,
+            'state': state,
+            'postalCode': postalCode,
+            'street1': street1,
+            'street2': street2
+        }
 
     def run_transaction(self, serviceType, **kwargs):
         """
@@ -234,7 +207,7 @@ class CyberSource(object):
 
         try:
             response = self.client.service.runTransaction(**options)
-        except WebFault as e:
+        except Fault as e:
             raise CyberSourceError(e)
 
         return CyberSourceResponse(response)
